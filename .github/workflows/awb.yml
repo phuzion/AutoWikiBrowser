@@ -17,7 +17,7 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - name: Build
         run: |
-            MSBuild.exe -m $Env:GITHUB_WORKSPACE\'AutoWikiBrowser no plugins.sln' /p:Configuration=Release
+            MSBuild.exe -m $Env:GITHUB_WORKSPACE\'AutoWikiBrowser no plugins.sln' /p:Configuration=Debug
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
