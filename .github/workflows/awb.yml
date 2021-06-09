@@ -10,6 +10,8 @@ jobs:
       fail-fast: false
       matrix:
         windows-version: ['windows-latest', 'windows-2016']
+    env:
+      build_type: Debug # This must be "Release" or "Debug"
 
     steps:
       - uses: actions/checkout@v2
@@ -17,17 +19,17 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
       - name: Build
         run: |
-            MSBuild.exe -m $Env:GITHUB_WORKSPACE\'AutoWikiBrowser no plugins.sln' /p:Configuration=Debug
+            MSBuild.exe -m $Env:GITHUB_WORKSPACE\'AutoWikiBrowser no plugins.sln' /p:Configuration=${{ env.build_type }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.windows-version }}
-          path: AWB/bin/Release
+          path: AWB/bin/${{ env.build_type }}
       - name: Install Nunit-Console
         run: choco install nunit-console-runner
 #      - name: Install Nunit3-Console (doesn't work yet)
 #        run: Install-Package NUnit.Runners -Version 3.12.0
 
       - name: Run Nunit Tests
-        run: nunit3-console.exe UnitTests\bin\Debug\UnitTests.dll
+        run: nunit3-console.exe UnitTests\bin\${{ env.build_type }}\UnitTests.dll
         
