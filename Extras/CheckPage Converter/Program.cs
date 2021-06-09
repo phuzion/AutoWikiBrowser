@@ -17,6 +17,7 @@ namespace CheckPage_Converter
         private static readonly Regex Message = new Regex("<!--[Mm]essage:(.*?)-->", RegexOptions.Compiled);
         private static readonly Regex VersionMessage = new Regex("<!--VersionMessage:(.*?)\\|\\|\\|\\|(.*?)-->", RegexOptions.Compiled);
         private static readonly Regex Underscores = new Regex("<!--[Uu]nderscores:(.*?)-->", RegexOptions.Compiled);
+        private static readonly Regex UsernameRegex = new Regex(@"^\*\s*(.*?)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
 
         private const string PHAB_TASK = "https://phabricator.wikimedia.org/T241196";
 
@@ -175,26 +176,25 @@ namespace CheckPage_Converter
 
                 wikis.Sort();
                 return wikis;
-            } else
+            }
+
+            using (var reader = new StreamReader("output.json"))
             {
-                using (var reader = new StreamReader("output.json"))
+                var json = reader.ReadToEnd();
+                var wikis = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
+
+                List<string> urls = new List<string>();
+                foreach(string key in wikis.Keys)
                 {
-                    var json = reader.ReadToEnd();
-                    var wikis = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
-
-                    List<string> urls = new List<string>();
-                    foreach(string key in wikis.Keys)
+                    if (key == "Done!" || key == "No check page")
                     {
-                        if (key == "Done!" || key == "No check page")
-                        {
-                            continue;
-                        }
-
-                        urls.AddRange(wikis[key]);
+                        continue;
                     }
-                    urls.Sort();
-                    return urls;
+
+                    urls.AddRange(wikis[key]);
                 }
+                urls.Sort();
+                return urls;
             }
         }
 
@@ -202,18 +202,37 @@ namespace CheckPage_Converter
         {
             ApiEdit edit = new ApiEdit($"{url}/w/");
 
+            var origCheckPageTitle = "Project:AutoWikiBrowser/CheckPage";
+
+            try
+            {
+                // Cheap, non logged in check for page existence
+                if (!edit.PageExists(origCheckPageTitle))
+                {
+                    return "No check page";
+                }
+            }
+            catch (ApiErrorException ape)
+            {
+                // Cheap, non logged in check failed. Try and login anyway
+                // If it wasn't readapidenied, fail
+                if (ape.ErrorCode != "readapidenied")
+                {
+                    throw;
+                }
+            }
+
             edit.Login(username, password);
 
-            var origCheckPageTitle = "Project:AutoWikiBrowser/CheckPage";
             var origCheckPageText = edit.Open(origCheckPageTitle);
-
-            var editProtection = edit.Page.EditProtection;
-            var moveProtection = edit.Page.MoveProtection;
 
             if (!edit.Page.Exists || string.IsNullOrEmpty(origCheckPageText))
             {
                 return "No check page";
             }
+
+            var editProtection = edit.Page.EditProtection;
+            var moveProtection = edit.Page.MoveProtection;
 
             var enabledUsers = Tools.StringBetween(origCheckPageText, "<!--enabledusersbegins-->",
                 "<!--enabledusersends-->");
@@ -222,10 +241,8 @@ namespace CheckPage_Converter
 
             var normalUsers = enabledUsers.Replace("<!--enabledbots-->" + botUsers + "<!--enabledbotsends-->", "");
 
-            Regex usernameRegex = new Regex(@"^\*\s*(.*?)\s*$", RegexOptions.Multiline | RegexOptions.Compiled);
-
             List<string> users = new List<string>();
-            foreach (Match m in usernameRegex.Matches(normalUsers))
+            foreach (Match m in UsernameRegex.Matches(normalUsers))
             {
                 if (!string.IsNullOrEmpty(m.Groups[1].Value.Trim()))
                 {
@@ -236,7 +253,7 @@ namespace CheckPage_Converter
             users.Sort();
 
             List<string> bots = new List<string>();
-            foreach (Match m in usernameRegex.Matches(botUsers))
+            foreach (Match m in UsernameRegex.Matches(botUsers))
             {
                 if (!string.IsNullOrEmpty(m.Groups[1].Value.Trim()))
                 {
