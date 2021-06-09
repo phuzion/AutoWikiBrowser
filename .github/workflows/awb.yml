@@ -23,10 +23,9 @@ jobs:
         with:
           name: ${{ matrix.windows-version }}
           path: .
+      - name: Install Nunit-Console
+        run: choco install nunit-console-runner
 
-      - name: Setup VSTest and add to PATH
-        uses: darenm/Setup-VSTest@v1
-      - name: Run VSTest
-        id: run_vstest
-        run: vstest.console.exe UnitTests\bin\Release\UnitTests.dll
+      - name: Run Nunit Tests
+        run: nunit-console.exe /xml:results.xml UnitTests\bin\Release\UnitTests.dll
         
