@@ -27,5 +27,5 @@ jobs:
         run: choco install nunit-console-runner
 
       - name: Run Nunit Tests
-        run: nunit3-console.exe /xml:results.xml UnitTests\bin\Release\UnitTests.dll
+        run: nunit3-console.exe UnitTests\bin\Release\UnitTests.dll
         
