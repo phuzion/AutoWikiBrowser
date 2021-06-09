@@ -29,5 +29,5 @@ jobs:
 #        run: Install-Package NUnit.Runners -Version 3.12.0
 
       - name: Run Nunit Tests
-        run: nunit3-console.exe UnitTests\bin\Release\UnitTests.dll
+        run: nunit3-console.exe UnitTests\bin\Debug\UnitTests.dll
         
