@@ -23,10 +23,10 @@ jobs:
         with:
           name: ${{ matrix.windows-version }}
           path: AWB/bin/Release
-#      - name: Install Nunit-Console
-#        run: choco install nunit-console-runner
-      - name: Install Nunit3-Console (less slow?)
-        run: Install-Package NUnit.Runners -Version 3.12.0
+      - name: Install Nunit-Console
+        run: choco install nunit-console-runner
+#      - name: Install Nunit3-Console (doesn't work yet)
+#        run: Install-Package NUnit.Runners -Version 3.12.0
 
       - name: Run Nunit Tests
         run: nunit3-console.exe UnitTests\bin\Release\UnitTests.dll
