@@ -22,10 +22,10 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.windows-version }}
-          path: .
+          path: AWB/bin/Release
       - name: Install Nunit-Console
         run: choco install nunit-console-runner
 
       - name: Run Nunit Tests
-        run: nunit-console.exe /xml:results.xml UnitTests\bin\Release\UnitTests.dll
+        run: nunit3-console.exe /xml:results.xml UnitTests\bin\Release\UnitTests.dll
         
