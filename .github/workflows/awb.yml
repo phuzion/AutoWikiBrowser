@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        windows-version: ['windows-latest', 'windows-2016']
+        windows-version: ['windows-2019']
 
     steps:
       - uses: actions/checkout@v2
