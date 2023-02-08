@@ -16,8 +16,8 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.0.2
       - uses: actions/setup-dotnet@v3
-          with:
-           dotnet-version: '4.5'
+        with:
+          dotnet-version: '4.5'
       - name: Build
         run: |
             MSBuild.exe $Env:GITHUB_WORKSPACE\'AutoWikiBrowser no plugins.sln' /p:Configuration=Release
